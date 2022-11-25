@@ -323,6 +323,7 @@ def world(
             ("UVC_Manager", {}),
             ("NDSI_Manager", {}),
             ("HMD_Streaming_Manager", {}),
+            ("Shared_Memory_Manager", {}),
             ("File_Manager", {}),
             ("Log_Display", {}),
             ("Dummy_Gaze_Mapper", {}),
