@@ -24,7 +24,8 @@ zeromq-pyre>=0.3.4  # Gracefully handle https://github.com/pupil-labs/pupil/issu
 cysignals ; platform_system != "Windows"
 win_inet_pton ; platform_system == "Windows"
 
-sysv-ipc
+# custom
+sysv-ipc 
 
 # Pupil-Labs
 ndsi==1.4.*
@@ -33,3 +34,12 @@ pupil-detectors>=2.0.2rc2
 pupil-labs-uvc
 pye3d==0.3.1.post1
 pyglui>=1.31.0
+
+
+
+
+
+
+
+
+
