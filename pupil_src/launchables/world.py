@@ -1,7 +1,7 @@
 """
 (*)~---------------------------------------------------------------------------
 Pupil - eye tracking platform
-Copyright (C) 2012-2022 Pupil Labs
+Copyright (C) Pupil Labs
 
 Distributed under the terms of the GNU
 Lesser General Public License (LGPL v3.0).
@@ -91,7 +91,6 @@ def world(
         n = {
             "subject": f"eye_process.should_stop.{eye_id}",
             "eye_id": eye_id,
-            "delay": 0.2,
         }
         ipc_pub.notify(n)
 
@@ -324,6 +323,7 @@ def world(
             ("NDSI_Manager", {}),
             ("HMD_Streaming_Manager", {}),
             ("Shared_Memory_Manager", {}),
+            ("Neon_Manager", {}),
             ("File_Manager", {}),
             ("Log_Display", {}),
             ("Dummy_Gaze_Mapper", {}),
@@ -346,7 +346,7 @@ def world(
 
             gl_utils.glViewport(0, 0, *window_size)
             try:
-                clipboard = glfw.get_clipboard_string(main_window).decode()
+                clipboard = glfw.get_clipboard_string(None).decode()
             except (AttributeError, glfw.GLFWError):
                 # clipboard is None, might happen on startup
                 clipboard = ""
@@ -354,7 +354,7 @@ def world(
             user_input = g_pool.gui.update()
             if user_input.clipboard != clipboard:
                 # only write to clipboard if content changed
-                glfw.set_clipboard_string(main_window, user_input.clipboard)
+                glfw.set_clipboard_string(None, user_input.clipboard)
 
             for button, action, mods in user_input.buttons:
                 x, y = glfw.get_cursor_pos(main_window)
@@ -785,7 +785,7 @@ def world(
 
                 gl_utils.glViewport(0, 0, *window_size)
                 try:
-                    clipboard = glfw.get_clipboard_string(main_window).decode()
+                    clipboard = glfw.get_clipboard_string(None).decode()
                 except (AttributeError, glfw.GLFWError):
                     # clipboard is None, might happen on startup
                     clipboard = ""
@@ -793,7 +793,7 @@ def world(
                 user_input = g_pool.gui.update()
                 if user_input.clipboard != clipboard:
                     # only write to clipboard if content changed
-                    glfw.set_clipboard_string(main_window, user_input.clipboard)
+                    glfw.set_clipboard_string(None, user_input.clipboard)
 
                 for button, action, mods in user_input.buttons:
                     x, y = glfw.get_cursor_pos(main_window)
@@ -846,6 +846,13 @@ def world(
 
         session_settings.close()
 
+    except Exception:
+        import traceback
+
+        trace = traceback.format_exc()
+        logger.error(f"Process Capture crashed with trace:\n{trace}")
+        raise
+    finally:
         # de-init all running plugins
         for p in g_pool.plugins:
             p.alive = False
@@ -855,13 +862,6 @@ def world(
         glfw.destroy_window(main_window)
         glfw.terminate()
 
-    except Exception:
-        import traceback
-
-        trace = traceback.format_exc()
-        logger.error(f"Process Capture crashed with trace:\n{trace}")
-
-    finally:
         # shut down eye processes:
         stop_eye_process(0)
         stop_eye_process(1)

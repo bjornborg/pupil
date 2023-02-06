@@ -1,14 +1,13 @@
 """
 (*)~---------------------------------------------------------------------------
 Pupil - eye tracking platform
-Copyright (C) 2012-2022 Pupil Labs
+Copyright (C) Pupil Labs
 
 Distributed under the terms of the GNU
 Lesser General Public License (LGPL v3.0).
 See COPYING and COPYING.LESSER for license details.
 ---------------------------------------------------------------------------~(*)
 """
-
 import importlib
 import logging
 import os
@@ -218,6 +217,10 @@ class Plugin:
             else:
                 self.g_pool.notifications.append(notification)
         else:
+            logger.debug(
+                f"'{notification['subject']}' notification sent with keys: "
+                f"{tuple(notification.keys())}"
+            )
             self.g_pool.ipc_pub.notify(notification)
 
     @property

@@ -51,7 +51,12 @@ def main():
         "ndsi",
         "pupil_apriltags",
         "pye3d",
-        "OpenGL",
+        "OpenGL.GL",
+        "OpenGL.platform.egl",  # wayland support
+        "OpenGL.platform.glx",  # x11 support
+        "pylsl",
+        "sklearn",
+        "glfw",
     ):
         datas, binaries, hiddenimports = collect_all(
             name, exclude_datas=["**/__pycache__"]
@@ -60,13 +65,18 @@ def main():
         all_binaries.extend(binaries)
         all_hidden_imports.extend(hiddenimports)
 
+    if current_platform == SupportedPlatform.linux:
+        runtime_hooks = ["runtime_hook_sounddevice.py"]
+    else:
+        runtime_hooks = []
+
     a = Analysis(
         ["../pupil_src/main.py"],
         pathex=["../pupil_src/shared_modules/"],
         datas=all_datas,
         binaries=all_binaries,
         hiddenimports=all_hidden_imports,
-        # runtime_hooks=["pupil_core_hooks.py"],
+        runtime_hooks=runtime_hooks,
     )
     pyz = PYZ(a.pure)
 
@@ -99,11 +109,6 @@ def main():
         extras.append((version_file_path.name, str(version_file_path), "DATA"))
 
         # Add binaries that are not being collected automatically
-        glfw: pathlib.Path = files("glfw")
-        extras.extend(
-            (bin_path.name, str(bin_path), "BINARY")
-            for bin_path in glfw.rglob("*" + LIB_EXT[current_platform])
-        )
 
         apriltags: pathlib.Path = files("pupil_apriltags")
         apriltags = apriltags.with_name(apriltags.name + ".libs")

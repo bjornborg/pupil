@@ -11,7 +11,7 @@ msgpack>=1.0.0
 numexpr
 numpy>=1.20.0
 opencv-python
-packaging>=20.0
+packaging>=20.0,<22
 psutil
 pyopengl
 pyzmq
@@ -32,14 +32,5 @@ ndsi==1.4.*
 pupil-apriltags==1.0.*
 pupil-detectors>=2.0.2rc2
 pupil-labs-uvc
-pye3d==0.3.1.post1
-pyglui>=1.31.0
-
-
-
-
-
-
-
-
-
+pye3d>=0.3.2
+pyglui>=1.31.1b1

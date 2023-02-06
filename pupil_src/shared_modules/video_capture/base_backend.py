@@ -1,14 +1,13 @@
 """
 (*)~---------------------------------------------------------------------------
 Pupil - eye tracking platform
-Copyright (C) 2012-2022 Pupil Labs
+Copyright (C) Pupil Labs
 
 Distributed under the terms of the GNU
 Lesser General Public License (LGPL v3.0).
 See COPYING and COPYING.LESSER for license details.
 ---------------------------------------------------------------------------~(*)
 """
-
 import logging
 import typing as T
 from enum import IntEnum, auto
@@ -142,7 +141,7 @@ class Base_Source(Plugin):
             logger.debug(f"Setting source mode: {new_mode.name}")
             self.notify_all({"subject": "backend.change_mode", "mode": new_mode})
 
-    def on_notify(self, notification):
+    def on_notify(self, notification: T.Dict[str, T.Any]):
         subject = notification["subject"]
 
         if subject == "backend.change_mode":

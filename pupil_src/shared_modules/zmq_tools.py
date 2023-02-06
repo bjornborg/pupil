@@ -1,14 +1,13 @@
 """
 (*)~---------------------------------------------------------------------------
 Pupil - eye tracking platform
-Copyright (C) 2012-2022 Pupil Labs
+Copyright (C) Pupil Labs
 
 Distributed under the terms of the GNU
 Lesser General Public License (LGPL v3.0).
 See COPYING and COPYING.LESSER for license details.
 ---------------------------------------------------------------------------~(*)
 """
-
 """
 This file contains convenience classes for communication with
 the Pupil IPC Backbone. These are intended to be used by plugins.
@@ -143,8 +142,8 @@ class Msg_Streamer(ZMQ_Socket):
     Not threadsave. Make a new one for each thread
     """
 
-    def __init__(self, ctx, url, hwm=None):
-        self.socket = zmq.Socket(ctx, zmq.PUB)
+    def __init__(self, ctx, url, hwm=None, socket_type: int = zmq.PUB):
+        self.socket = zmq.Socket(ctx, socket_type)
         if hwm is not None:
             self.socket.set_hwm(hwm)
 
