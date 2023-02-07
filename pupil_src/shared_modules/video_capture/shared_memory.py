@@ -153,7 +153,7 @@ class Shared_Memory(Base_Source):
         super().__init__(g_pool, *args, **kwargs)
         self.fps = 0 
         self.healthy = True
-        self.frame_size = (1280,720)
+        self.frame_size = (1440,1600)
         self.startUnixTimestampNs = 0
         self.previousTimestampUnixNs = 0
         self.syncedPupilTime = self.g_pool.get_timestamp() #add this to normalised time
@@ -200,7 +200,9 @@ class Shared_Memory(Base_Source):
               logger.debug(f"Ill-formatted frame received. Missing key: {err}")
 
           
-            
+          if self.shm.currentUnixTimestampNs == self.previousTimestampUnixNs:
+            self.healthy = False
+            return
           self.fps = 10**9/(self.shm.currentUnixTimestampNs - self.previousTimestampUnixNs)
           self.previousTimestampUnixNs = self.shm.currentUnixTimestampNs
           puplTimestampSeconds = self.syncedPupilTime + (self.shm.currentUnixTimestampNs - self.startUnixTimestampNs)/10**9
