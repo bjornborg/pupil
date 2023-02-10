@@ -159,9 +159,9 @@ class CalibrationChoreographyPlugin(Plugin):
             raise NotImplementedError(f'{cls} must implement a "label" class property')
 
     @staticmethod
-    def registered_choreographies_by_label() -> T.Mapping[
-        str, "CalibrationChoreographyPlugin"
-    ]:
+    def registered_choreographies_by_label() -> (
+        T.Mapping[str, "CalibrationChoreographyPlugin"]
+    ):
         return dict(CalibrationChoreographyPlugin.__registered_choreography_plugins)
 
     @classmethod
@@ -355,8 +355,6 @@ class CalibrationChoreographyPlugin(Plugin):
         ui_text.text = self.selected_gazer_class._gazer_description_text()
 
     def init_ui(self):
-        from pyglui import ui
-
         desc_text = ui.Info_Text(self._choreography_description_text())
 
         self.__ui_selector_choreography = ui.Selector(

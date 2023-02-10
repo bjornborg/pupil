@@ -19,6 +19,7 @@ from scipy.interpolate import interp1d
 from scipy.spatial.distance import pdist
 
 
+
 # because np.sqrt is slower when we do it on small arrays
 def reversedEnumerate(l):
     return zip(range(len(l) - 1, -1, -1), reversed(l))
@@ -408,7 +409,6 @@ def detect_markers_robust(
     tick -= 1
 
     if prev_img is not None and prev_img.shape == gray_img.shape and prev_markers:
-
         new_ids = [m["id"] for m in new_markers]
 
         # any old markers not found in the new list?
