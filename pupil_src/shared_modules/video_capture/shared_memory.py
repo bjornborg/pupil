@@ -421,7 +421,7 @@ class Shared_Memory_Manager(Base_Manager):
             os.path.join(r"/tmp", file)
             for file in os.listdir(r"/tmp")
             # if file.endswith(".argb")
-            or file.endswith(".i422")
+            if file.endswith(".i422")
         ]
 
     def cleanup(self):
