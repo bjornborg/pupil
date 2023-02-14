@@ -111,6 +111,47 @@ class BGRAFrame(Uint8BufferFrame):
             return self._gray
 
 
+class YUV420Frame(abc.ABC):
+    def __init__(
+        self,
+        buffer: bytes,
+        timestamp: float,
+        index: int,
+        width: int,
+        height: int,
+    ):
+        #
+        self.timestamp = timestamp
+        self.index = index
+        self.width = width
+        self.height = height
+        self.yuv_buffer = self.interpret_buffer(buffer, width, height)
+        # indicate that the frame does not have a native yuv or jpeg buffer
+        self.jpeg_buffer = None
+
+    def interpret_buffer(
+        self, buffer: bytes, width: int, height: int
+    ) -> npt.NDArray[np.uint8]:
+        # 2022-11-25 13:32:30 bb | To handle alpha channel
+        return np.fromstring(buffer, dtype=np.uint8)
+    # @property
+    # # dtype uint8, shape (height, width)
+    # def gray(self) -> npt.NDArray[np.uint8]:
+    #     raise NotImplementedError
+
+    # @property
+    # def bgr(self) -> npt.NDArray[np.uint8]:
+    #     # dtype uint8, shape (height, width, 3), memory needs to be allocated contiguous
+    #     raise NotImplementedError
+
+    # @property
+    # def img(self) -> npt.NDArray[np.uint8]:
+    #     # equivalent for bgr; kept for legacy reasons
+    #     # 2022-11-25 13:47:26 bb | Removing alpha channel, they assume 3 channels
+    #     # 2022-11-25 13:54:31 bb | Image converters in cython needs contiguous data
+    #     return self.bgr
+        # return np.ascontiguousarray(self.bgr[:,:,:3])
+
 # class YUV420Frame(Uint8BufferFrame):
 #     @property
 #     def depth(self) -> int:
@@ -253,7 +294,7 @@ class Shared_Memory(Base_Source):
                 + (self.shm.currentUnixTimestampNs - self.startUnixTimestampNs)
                 / 10**9
             )
-            if self.frame_size[0] * self.frame_size[1] * 4 != len(buf):
+            if self.frame_size[0] * self.frame_size[1] * 2 != len(buf):
                 logger.error(
                     "Incorrect image dimension:{},{}. Size of buf {}".format(
                         self.frame_size[0], self.frame_size[1], len(buf)
@@ -261,7 +302,7 @@ class Shared_Memory(Base_Source):
                 )
                 self.healthy = False
             else:
-                return BGRAFrame(
+                return YUV420Frame(
                     buf,
                     puplTimestampSeconds,
                     self.shm.index(),
@@ -379,8 +420,8 @@ class Shared_Memory_Manager(Base_Manager):
         self.sourceList = [
             os.path.join(r"/tmp", file)
             for file in os.listdir(r"/tmp")
-            if file.endswith(".argb")
-            #  or file.endswith(".i420")
+            # if file.endswith(".argb")
+            or file.endswith(".i422")
         ]
 
     def cleanup(self):
