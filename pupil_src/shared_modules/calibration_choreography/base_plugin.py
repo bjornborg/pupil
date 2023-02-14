@@ -15,6 +15,10 @@ import logging
 import typing as T
 
 import audio
+from pyglui import ui
+from plugin import Plugin
+from hotkey import Hotkey
+
 from gaze_mapping import GazerHMD3D, default_gazer_class, registered_gazer_classes
 from gaze_mapping.gazer_base import GazerBase
 from hotkey import Hotkey
@@ -103,7 +107,7 @@ class CalibrationChoreographyPlugin(Plugin):
     icon_font = "pupil_icons"
     uniqueness = "by_base_class"
 
-    ### Public
+    # Public
 
     label = None
 
@@ -156,7 +160,8 @@ class CalibrationChoreographyPlugin(Plugin):
         if cls.label:
             return cls.label
         else:
-            raise NotImplementedError(f'{cls} must implement a "label" class property')
+            raise NotImplementedError(
+                f'{cls} must implement a "label" class property')
 
     @staticmethod
     def registered_choreographies_by_label() -> (
@@ -169,8 +174,10 @@ class CalibrationChoreographyPlugin(Plugin):
         choreo_classes = cls.registered_choreographies_by_label().values()
         choreo_classes = filter(lambda c: c.is_user_selectable, choreo_classes)
         # First sort alphabetically by selection_label, then sort by selection_order
-        choreo_classes = sorted(choreo_classes, key=lambda c: c.selection_label())
-        choreo_classes = sorted(choreo_classes, key=lambda c: c.selection_order())
+        choreo_classes = sorted(
+            choreo_classes, key=lambda c: c.selection_label())
+        choreo_classes = sorted(
+            choreo_classes, key=lambda c: c.selection_order())
         return choreo_classes
 
     @classmethod
@@ -310,7 +317,8 @@ class CalibrationChoreographyPlugin(Plugin):
     ):
         if mode == ChoreographyMode.CALIBRATION:
             calib_data = {"ref_list": ref_list, "pupil_list": pupil_list}
-            self._start_plugin(self.selected_gazer_class, calib_data=calib_data)
+            self._start_plugin(self.selected_gazer_class,
+                               calib_data=calib_data)
         elif mode == ChoreographyMode.VALIDATION:
             assert self.g_pool.active_gaze_mapping_plugin is not None
             gazer_class = self.g_pool.active_gaze_mapping_plugin.__class__
@@ -332,7 +340,7 @@ class CalibrationChoreographyPlugin(Plugin):
         else:
             raise UnsupportedChoreographyModeError(mode)
 
-    ### Public - Plugin
+    # Public - Plugin
 
     @classmethod
     def base_class(cls):
@@ -498,7 +506,8 @@ class CalibrationChoreographyPlugin(Plugin):
             if self.is_active:
                 pass  # No-op; each choreography should handle it independently
             else:
-                logger.error("Ref data can only be added when calibration is running.")
+                logger.error(
+                    "Ref data can only be added when calibration is running.")
 
         if note.action == ChoreographyAction.SHOULD_STOP:
             if not self.is_active:
@@ -506,7 +515,7 @@ class CalibrationChoreographyPlugin(Plugin):
             else:
                 self._perform_stop()
 
-    ### Internal
+    # Internal
 
     def _signal_should_start(self, mode: ChoreographyMode):
         self.notify_all(
@@ -535,20 +544,21 @@ class CalibrationChoreographyPlugin(Plugin):
         logger.info(f"Starting  {current_mode.label}")
         audio.tink()
 
-        ### Set the calibration choreography state
+        # Set the calibration choreography state
 
         self.__is_active = True
         self.__ref_list = []
         self.__pupil_list = []
 
-        ### Set the calibration choreography UI
+        # Set the calibration choreography UI
 
         # Hide all buttons for the mode buttons that are not currently used
         for mode in list(ChoreographyMode):
             if self.__current_mode != mode:
-                self.__toggle_mode_button_visibility(is_visible=False, mode=mode)
+                self.__toggle_mode_button_visibility(
+                    is_visible=False, mode=mode)
 
-        ### Call relevant callbacks
+        # Call relevant callbacks
 
         self.on_choreography_started(mode=current_mode)
 
@@ -572,13 +582,13 @@ class CalibrationChoreographyPlugin(Plugin):
         logger.info(f"Stopping  {current_mode.label}")
         audio.tink()
 
-        ### Set the calibration choreography state
+        # Set the calibration choreography state
 
         self.__is_active = False
         self.__ref_list = []
         self.__pupil_list = []
 
-        ### Set the calibration choreography UI
+        # Set the calibration choreography UI
 
         self.status_text = None
 
@@ -586,7 +596,7 @@ class CalibrationChoreographyPlugin(Plugin):
         for mode in list(ChoreographyMode):
             self.__toggle_mode_button_visibility(is_visible=True, mode=mode)
 
-        ### Call relevant callbacks
+        # Call relevant callbacks
 
         self.on_choreography_stopped(mode=current_mode)
 
@@ -607,7 +617,7 @@ class CalibrationChoreographyPlugin(Plugin):
             {"subject": "start_plugin", "name": plugin_name, "args": kwargs}
         )
 
-    ### Private
+    # Private
 
     @classmethod
     def __choreography_selection_getter(cls):
