@@ -111,7 +111,7 @@ class BGRAFrame(Uint8BufferFrame):
             return self._gray
 
 
-class YUV420Frame(abc.ABC):
+class YUV422Frame(abc.ABC):
     def __init__(
         self,
         buffer: bytes,
@@ -134,10 +134,21 @@ class YUV420Frame(abc.ABC):
     ) -> npt.NDArray[np.uint8]:
         # 2022-11-25 13:32:30 bb | To handle alpha channel
         return np.fromstring(buffer, dtype=np.uint8)
-    # @property
-    # # dtype uint8, shape (height, width)
-    # def gray(self) -> npt.NDArray[np.uint8]:
-    #     raise NotImplementedError
+
+    @property
+    def yuv422(self):
+        # np.ndarray(mn.uint8_t, ndim=2] Y,U,V
+        y_plane_len = self.width*self.height
+        Y = np.asarray(self.yuv_buffer[:y_plane_len]).reshape(
+            self.height, self.width)
+        uv_plane_len = y_plane_len//2
+        offset = y_plane_len
+        U = np.asarray(
+            self.yuv_buffer[offset:offset+uv_plane_len]).reshape(self.height, self.width//2)
+        offset += uv_plane_len
+        V = np.asarray(
+            self.yuv_buffer[offset:offset+uv_plane_len]).reshape(self.height, self.width//2)
+        return Y, U, V
 
     # @property
     # def bgr(self) -> npt.NDArray[np.uint8]:
@@ -302,7 +313,7 @@ class Shared_Memory(Base_Source):
                 )
                 self.healthy = False
             else:
-                return YUV420Frame(
+                return YUV422Frame(
                     buf,
                     puplTimestampSeconds,
                     self.shm.index(),
