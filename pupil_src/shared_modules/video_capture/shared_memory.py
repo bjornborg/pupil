@@ -15,6 +15,7 @@ import sysv_ipc
 import abc
 import logging
 import time
+import pathlib
 from typing import Iterable, List, Optional, Tuple, Type
 from typing_extensions import Literal, NotRequired, TypedDict
 
@@ -100,6 +101,25 @@ class BGRAFrame(Uint8BufferFrame):
     @property
     def bgr(self) -> npt.NDArray[np.uint8]:
         return np.ascontiguousarray(self._buffer[:, :, :3])
+
+    @property
+    def gray(self):
+        try:
+            return self._gray
+        except AttributeError:
+            self._gray = np.mean(self._buffer, axis=-
+                                 1).astype(self._buffer.dtype)
+            return self._gray
+
+
+class BGRFrame(Uint8BufferFrame):
+    @property
+    def depth(self) -> int:
+        return 3
+
+    @property
+    def bgr(self) -> npt.NDArray[np.uint8]:
+        return self._buffer
 
     @property
     def gray(self):
@@ -226,6 +246,7 @@ class Shared_Memory(Base_Source):
         self,
         g_pool,
         key=None,
+        imagetype=None,
         *args,
         **kwargs,
     ):
@@ -246,6 +267,7 @@ class Shared_Memory(Base_Source):
         else:
             self.shm = None
             self.healthy = False
+        self.imagetype = imagetype
         self.projection_matrix = np.array(
             [
                 [500, 0, self.frame_size[0] / 2],
@@ -305,21 +327,43 @@ class Shared_Memory(Base_Source):
                 + (self.shm.currentUnixTimestampNs - self.startUnixTimestampNs)
                 / 10**9
             )
-            if self.frame_size[0] * self.frame_size[1] * 2 != len(buf):
-                logger.error(
-                    "Incorrect image dimension:{},{}. Size of buf {}".format(
-                        self.frame_size[0], self.frame_size[1], len(buf)
+            if (self.imagetype == "rgb"):
+                if self.frame_size[0] * self.frame_size[1] * 3 != len(buf):
+                    logger.error(
+                        "Incorrect image dimension:{},{}. Size of buf {}".format(
+                            self.frame_size[0], self.frame_size[1], len(buf)
+                        )
                     )
+                    self.healthy = False
+                else:
+                    return BGRFrame(
+                        buf,
+                        puplTimestampSeconds,
+                        self.shm.index(),
+                        self.frame_size[0],
+                        self.frame_size[1],
+                    )
+            elif (self.imagetype == "i422"):
+                if self.frame_size[0] * self.frame_size[1] * 2 != len(buf):
+                    logger.error(
+                        "Incorrect image dimension:{},{}. Size of buf {}".format(
+                            self.frame_size[0], self.frame_size[1], len(buf)
+                        )
+                    )
+                    self.healthy = False
+                else:
+                    return YUV422Frame(
+                        buf,
+                        puplTimestampSeconds,
+                        self.shm.index(),
+                        self.frame_size[0],
+                        self.frame_size[1],
+                    )
+            else:
+                logger.error(
+                    "Unsupported data image format:{}".format(self.imagetype)
                 )
                 self.healthy = False
-            else:
-                return YUV422Frame(
-                    buf,
-                    puplTimestampSeconds,
-                    self.shm.index(),
-                    self.frame_size[0],
-                    self.frame_size[1],
-                )
 
     @property
     def name(self):
@@ -419,6 +463,7 @@ class Shared_Memory_Manager(Base_Manager):
 
         settings = {
             "key": source_key,
+            "imagetype": pathlib.Path(source_key).suffix[1:]
         }
         if self.g_pool.process == "world":
             self.notify_all(
@@ -431,8 +476,8 @@ class Shared_Memory_Manager(Base_Manager):
         self.sourceList = [
             os.path.join(r"/tmp", file)
             for file in os.listdir(r"/tmp")
-            # if file.endswith(".argb")
-            if file.endswith(".i422")
+            if file.endswith(".rgb")
+            or file.endswith(".i422")
         ]
 
     def cleanup(self):
