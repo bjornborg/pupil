@@ -131,6 +131,17 @@ class BGRFrame(Uint8BufferFrame):
             return self._gray
 
 
+class RGBFrame(BGRFrame):
+    @property
+    # 2023-02-15 15:23:13 bb | very slow
+    def bgr(self) -> npt.NDArray[np.uint8]:
+        try:
+            return self._bgr
+        except AttributeError:
+            self._bgr = np.ascontiguousarray(self._buffer[:, :, ::-1])
+            return self._bgr
+
+
 class YUV422Frame(abc.ABC):
     def __init__(
         self,
@@ -169,53 +180,6 @@ class YUV422Frame(abc.ABC):
         V = np.asarray(
             self.yuv_buffer[offset:offset+uv_plane_len]).reshape(self.height, self.width//2)
         return Y, U, V
-
-    # @property
-    # def bgr(self) -> npt.NDArray[np.uint8]:
-    #     # dtype uint8, shape (height, width, 3), memory needs to be allocated contiguous
-    #     raise NotImplementedError
-
-    # @property
-    # def img(self) -> npt.NDArray[np.uint8]:
-    #     # equivalent for bgr; kept for legacy reasons
-    #     # 2022-11-25 13:47:26 bb | Removing alpha channel, they assume 3 channels
-    #     # 2022-11-25 13:54:31 bb | Image converters in cython needs contiguous data
-    #     return self.bgr
-        # return np.ascontiguousarray(self.bgr[:,:,:3])
-
-# class YUV420Frame(Uint8BufferFrame):
-#     @property
-#     def depth(self) -> int:
-#         return 3
-
-# @property
-# def yuv_buffer()
-# @property
-# def bgr(self) -> int:
-#     raise NotImplementedError
-# @property
-# def gray(self):
-#     try:
-#         return self._gray
-#     except AttributeError:
-#         self._gray = np.mean(self._buffer, axis=-1).astype(self._buffer.dtype)
-#         return self._gray
-# class RGBFrame(BGRFrame):
-#     @property
-#     def bgr(self) -> npt.NDArray[np.uint8]:
-#         try:
-#             return self._bgr
-#         except AttributeError:
-#             self._bgr = np.ascontiguousarray(np.flip(self._buffer, (0, 2)))
-#             return self._bgr
-
-#     @property
-#     def gray(self):
-#         try:
-#             return self._gray
-#         except AttributeError:
-#             self._gray = np.mean(self._buffer, axis=-1).astype(self._buffer.dtype)
-#             return self._gray
 
 
 class Shared_Memory(Base_Source):
@@ -336,7 +300,7 @@ class Shared_Memory(Base_Source):
                     )
                     self.healthy = False
                 else:
-                    return BGRFrame(
+                    return RGBFrame(
                         buf,
                         puplTimestampSeconds,
                         self.shm.index(),
