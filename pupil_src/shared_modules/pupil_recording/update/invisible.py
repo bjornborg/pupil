@@ -93,7 +93,8 @@ def _generate_pprf_2_1_info_file(rec_dir: str) -> RecordingInfoFile:
 
     # Create a recording info file with the new format,
     # fill out the information, validate, and return.
-    new_info_file = RecordingInfoFile.create_empty_file(rec_dir, parse_version("2.1"))
+    new_info_file = RecordingInfoFile.create_empty_file(
+        rec_dir, parse_version("2.1"))
     new_info_file.recording_uuid = recording_uuid
     new_info_file.start_time_system_ns = start_time_system_ns
     new_info_file.start_time_synced_ns = start_time_synced_ns
@@ -131,7 +132,8 @@ def _pi_path_core_path_pairs(recording: PupilRecording):
                 # NOTE: recordings for PI start at part 1, mobile start at part 0
                 replacement += f"_{part_number - 1:03}"
 
-            core_name = pi_path.name.replace(match.group("prefix"), replacement)
+            core_name = pi_path.name.replace(
+                match.group("prefix"), replacement)
             core_path = pi_path.with_name(core_name)
             yield pi_path, core_path
 
@@ -208,7 +210,8 @@ class BrokenFirstFrameRecordingIssue:
                 # Save video, dropping first frame, to temp file
                 video_format = v_path.suffix[1:]
                 in_container = av.open(str(v_path), format=video_format)
-                out_container = av.open(str(temp_v_path), "w", format=video_format)
+                out_container = av.open(
+                    str(temp_v_path), "w", format=video_format)
 
                 # input -> output stream mapping
                 stream_mapping = {
@@ -237,7 +240,8 @@ class BrokenFirstFrameRecordingIssue:
                 cls._pi_raw_time_save(temp_t_path, ts[1:])
 
                 # Overwrite old files with new ones
-                v_path = v_path.with_name(v_path.stem).with_suffix(v_path.suffix)
+                v_path = v_path.with_name(
+                    v_path.stem).with_suffix(v_path.suffix)
 
                 # pathlib.Path.replace raises an `OSError: [Errno 18] Cross-device link`
                 # if the temp file is on a different device than the original. This
@@ -252,12 +256,6 @@ class BrokenFirstFrameRecordingIssue:
         # this is a symptom of Pupil Invisible recording with broken first frame.
         # If the first timestamp is greater, remove it from the timestamps and overwrite the file.
         for v_path, ts_path in cls._pi_world_video_and_raw_time_paths(recording):
-            in_container = av.open(str(v_path))
-            packets = in_container.demux(video=0)
-
-            # Try to demux the first frame.
-            # This is expected to raise an error.
-            # If no error is raised, ignore this video.
             try:
                 with av.open(str(v_path), format=v_path.suffix[1:]) as in_container:
                     packets = in_container.demux(video=0)
@@ -307,7 +305,8 @@ class BrokenFirstFrameRecordingIssue:
             video_path = pi_path
             raw_time_path = video_path.with_suffix(".time")
 
-            assert raw_time_path.is_file(), f"Expected file at path: {raw_time_path}"
+            assert raw_time_path.is_file(
+            ), f"Expected file at path: {raw_time_path}"
 
             yield video_path, raw_time_path
 
@@ -416,7 +415,8 @@ def _pi_realtime_recorded_gaze_items(timestamps_realtime_paths):
         timestamps = _load_timestamps_data(timestamps_path)
         conf_data = _load_worn_data(_find_worn_path(timestamps_path))
 
-        raw_data, timestamps = _equalize_length_if_necessary(raw_data, timestamps)
+        raw_data, timestamps = _equalize_length_if_necessary(
+            raw_data, timestamps)
         conf_data = _validated_conf_data(conf_data, timestamps)
         yield from zip(raw_data, timestamps, conf_data)
 

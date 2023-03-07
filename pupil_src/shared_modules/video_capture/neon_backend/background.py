@@ -55,9 +55,10 @@ class BackgroundCameraSharingManager:
         self.should_stop_running_event.set()
         self._background_process.join(timeout=5.0)
         if self.is_running:
-            logging.getLogger(__name__ + ".foreground").warning(
-                "Background process could not be terminated"
+            logging.getLogger(__name__ + ".foreground").debug(
+                "Background process did not terminate gracefully. Forcing termination!"
             )
+            self._background_process.terminate()
 
     @property
     def is_running(self) -> bool:
@@ -95,7 +96,6 @@ class BackgroundCameraSharingManager:
             camera: Optional[NeonCameraInterface] = None
 
             while not should_stop_running_event.is_set():
-
                 network.process_subscriptions()
                 if network.num_subscribers > 0 and camera is None:
                     network.logger.debug("New subscriber(s) - start sharing camera")

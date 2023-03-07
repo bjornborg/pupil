@@ -71,7 +71,7 @@ class LeGrandEye(BasicEye):
         n_refraction=1.3375,
         camera=None,
     ):
-        super(LeGrandEye, self).__init__()
+        super().__init__()
 
         self.model_type = "LeGrand"
 
@@ -106,7 +106,8 @@ class LeGrandEye(BasicEye):
         self.camera = camera
 
         # GL SETUP
-        self.eyeball_alpha = np.arccos(distance_eyeball_pupil / self.eyeball_radius)
+        self.eyeball_alpha = np.arccos(
+            distance_eyeball_pupil / self.eyeball_radius)
         self.cornea_alpha = np.arccos(4.0 / self.cornea_radius) / 1.0
         self.set_up_gl_vertices()
 
@@ -134,7 +135,8 @@ class LeGrandEye(BasicEye):
     def set_up_gl_vertices(self):
         # EYEBALL
         self.central_ring_eyeball = [
-            [self.eyeball_radius * np.sin(phi), 0, self.eyeball_radius * np.cos(phi)]
+            [self.eyeball_radius * np.sin(phi), 0,
+             self.eyeball_radius * np.cos(phi)]
             for phi in np.linspace(
                 self.eyeball_alpha, 2 * np.pi - self.eyeball_alpha, 30
             )
@@ -154,15 +156,18 @@ class LeGrandEye(BasicEye):
             self.iris_quads.append(
                 [
                     np.array((np.cos(angles[i]), np.sin(angles[i]), 0)),
-                    np.array((np.cos(angles[i + 1]), np.sin(angles[i + 1]), 0)),
-                    np.array((np.cos(angles[i + 1]), np.sin(angles[i + 1]), 0)),
+                    np.array((np.cos(angles[i + 1]),
+                             np.sin(angles[i + 1]), 0)),
+                    np.array((np.cos(angles[i + 1]),
+                             np.sin(angles[i + 1]), 0)),
                     np.array((np.cos(angles[i]), np.sin(angles[i]), 0)),
                 ]
             )
 
         # CORNEA
         self.central_ring_cornea = [
-            [self.cornea_radius * np.sin(phi), 0, self.cornea_radius * np.cos(phi)]
+            [self.cornea_radius * np.sin(phi), 0,
+             self.cornea_radius * np.cos(phi)]
             for phi in np.linspace(-self.cornea_alpha, self.cornea_alpha, 20)
         ]
 

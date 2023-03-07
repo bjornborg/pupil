@@ -19,7 +19,6 @@ from scipy.interpolate import interp1d
 from scipy.spatial.distance import pdist
 
 
-
 # because np.sqrt is slower when we do it on small arrays
 def reversedEnumerate(l):
     return zip(range(len(l) - 1, -1, -1), reversed(l))
