@@ -157,7 +157,7 @@ class YUV422Frame(abc.ABC):
         self.width = width
         self.height = height
         self.yuv_buffer = self.interpret_buffer(buffer, width, height)
-        # indicate that the frame does not have a native yuv or jpeg buffer
+        # indicate that the frame does not have a jpeg buffer
         self.jpeg_buffer = None
 
     def interpret_buffer(
@@ -177,11 +177,19 @@ class YUV422Frame(abc.ABC):
         U = np.asarray(
             self.yuv_buffer[offset:offset+uv_plane_len]).reshape(self.height, self.width//2)
         offset += uv_plane_len
-        V = np.asarray(
-            self.yuv_buffer[offset:offset+uv_plane_len]).reshape(self.height, self.width//2)
+        V = np.asarray(self.yuv_buffer[offset:offset+uv_plane_len]).reshape(self.height, self.width//2)
         return Y, U, V
 
-
+    @property
+    def gray(self):
+        try:
+            return self._gray
+        except AttributeError:
+            y_plane_len = self.width*self.height
+            self._gray = np.asarray(self.yuv_buffer[:y_plane_len]).reshape(self.height, self.width)
+            return self._gray
+          
+          
 class Shared_Memory(Base_Source):
     """
     Shared memory consumer for reading image data in /tmp
