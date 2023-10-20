@@ -25,6 +25,7 @@ Terms
       dispersion threshold?
 """
 
+
 import csv
 import enum
 import logging
@@ -33,7 +34,6 @@ import typing as T
 from bisect import bisect_left, bisect_right
 from collections import deque
 from types import SimpleNamespace
-
 import background_helper as bh
 import cv2
 import data_changed
@@ -50,7 +50,6 @@ from pyglui import ui
 from pyglui.cygl.utils import RGBA, draw_circle
 from pyglui.pyfontstash import fontstash
 from scipy.spatial.distance import pdist
-
 logger = logging.getLogger(__name__)
 
 
@@ -94,7 +93,8 @@ def fixation_from_data(
     if timestamps is not None:
         start, end = base_data[0]["timestamp"], base_data[-1]["timestamp"]
         start, end = np.searchsorted(timestamps, [start, end])
-        end = min(end, len(timestamps) - 1)  # fix `list index out of range` error
+        # fix `list index out of range` error
+        end = min(end, len(timestamps) - 1)
         fix["start_frame_index"] = int(start)
         fix["end_frame_index"] = int(end)
         fix["mid_frame_index"] = int((start + end) // 2)
@@ -315,7 +315,8 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
         self._gaze_changed_listener = data_changed.Listener(
             "gaze_positions", g_pool.rec_dir, plugin=self
         )
-        self._gaze_changed_listener.add_observer("on_data_changed", self._classify)
+        self._gaze_changed_listener.add_observer(
+            "on_data_changed", self._classify)
         self._fixations_changed_announcer = data_changed.Announcer(
             "fixations", g_pool.rec_dir, plugin=self
         )
@@ -327,7 +328,8 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
             self.ConfigMismatchError,
             self.DataMismatchError,
         ) as err:
-            logger.debug(f"Offline data not loaded: {err} ({type(err).__name__})")
+            logger.debug(
+                f"Offline data not loaded: {err} ({type(err).__name__})")
             self.notify_all(
                 {"subject": "fixation_detector.should_recalculate", "delay": 0.5}
             )
@@ -438,7 +440,8 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
                 "status", self, label="Detection progress:", setter=lambda x: None
             )
         )
-        self.menu.append(ui.Switch("show_fixations", self, label="Show fixations"))
+        self.menu.append(ui.Switch("show_fixations",
+                         self, label="Show fixations"))
         self.current_fixation_details = ui.Info_Text("")
         self.menu.append(self.current_fixation_details)
 
@@ -492,7 +495,8 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
         elif notification["subject"] == "fixation_detector.should_recalculate":
             self._classify()
         elif notification["subject"] == "should_export":
-            self.export_fixations(notification["ts_window"], notification["export_dir"])
+            self.export_fixations(
+                notification["ts_window"], notification["export_dir"])
 
     def _classify(self):
         """
@@ -586,12 +590,15 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
                     f["id"], len(self.g_pool.fixations)
                 )
                 info += "    Confidence: {:.2f}\n".format(f["confidence"])
-                info += "    Duration: {:.2f} milliseconds\n".format(f["duration"])
-                info += "    Dispersion: {:.3f} degrees\n".format(f["dispersion"])
+                info += "    Duration: {:.2f} milliseconds\n".format(
+                    f["duration"])
+                info += "    Dispersion: {:.3f} degrees\n".format(
+                    f["dispersion"])
                 info += "    Frame range: {}-{}\n".format(
                     f["start_frame_index"] + 1, f["end_frame_index"] + 1
                 )
-                info += "    2d gaze pos: x={:.3f}, y={:.3f}\n".format(*f["norm_pos"])
+                info += "    2d gaze pos: x={:.3f}, y={:.3f}\n".format(
+                    *f["norm_pos"])
                 if "gaze_point_3d" in f:
                     info += "    3d gaze pos: x={:.3f}, y={:.3f}, z={:.3f}\n".format(
                         *f["gaze_point_3d"]
@@ -601,7 +608,8 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
                 if f["id"] > 1:
                     prev_f = self.g_pool.fixations[f["id"] - 2]
                     time_lapsed = (
-                        f["timestamp"] - prev_f["timestamp"] + prev_f["duration"] / 1000
+                        f["timestamp"] - prev_f["timestamp"] +
+                        prev_f["duration"] / 1000
                     )
                     info += "    Time since prev. fixation: {:.2f} seconds\n".format(
                         time_lapsed
@@ -612,7 +620,8 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
                 if f["id"] < len(self.g_pool.fixations):
                     next_f = self.g_pool.fixations[f["id"]]
                     time_lapsed = (
-                        next_f["timestamp"] - f["timestamp"] + f["duration"] / 1000
+                        next_f["timestamp"] - f["timestamp"] +
+                        f["duration"] / 1000
                     )
                     info += "    Time to next fixation: {:.2f} seconds\n".format(
                         time_lapsed
@@ -652,8 +661,10 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
     def save_offline_data(self):
         with fm.PLData_Writer(self.data_dir, "fixations") as writer:
             for timestamp, datum in zip(self.fixation_start_ts, self.fixation_data):
-                writer.append_serialized(timestamp, "fixation", datum.serialized)
-        path_stop_ts = os.path.join(self.data_dir, "fixations_stop_timestamps.npy")
+                writer.append_serialized(
+                    timestamp, "fixation", datum.serialized)
+        path_stop_ts = os.path.join(
+            self.data_dir, "fixations_stop_timestamps.npy")
         np.save(path_stop_ts, self.fixation_stop_ts)
         path_meta = os.path.join(self.data_dir, "fixations.meta")
         fm.save_object(
@@ -665,7 +676,8 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
         )
 
     def load_offline_data(self):
-        path_stop_ts = os.path.join(self.data_dir, "fixations_stop_timestamps.npy")
+        path_stop_ts = os.path.join(
+            self.data_dir, "fixations_stop_timestamps.npy")
         fixation_stop_ts = np.load(path_stop_ts)
         path_meta = os.path.join(self.data_dir, "fixations.meta")
         meta = fm.load_object(path_meta)
@@ -682,7 +694,8 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
             )
         fixations = fm.load_pldata_file(self.data_dir, "fixations")
         if not (
-            len(fixations.data) == len(fixations.timestamps) == len(fixation_stop_ts)
+            len(fixations.data) == len(
+                fixations.timestamps) == len(fixation_stop_ts)
         ):
             raise self.DataMismatchError(
                 f"Data inconsistent:\n"
@@ -738,7 +751,8 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
             *fixation.get(
                 "gaze_point_3d", [None] * 3
             ),  # expanded, hence * at beginning
-            " ".join(["{}".format(gp["timestamp"]) for gp in fixation["base_data"]]),
+            " ".join(["{}".format(gp["timestamp"])
+                     for gp in fixation["base_data"]]),
         )
 
     def export_fixations(self, export_window, export_dir):
@@ -758,7 +772,8 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
             logger.warning("No fixations in this recording nothing to export")
             return
 
-        fixations_in_section = self.g_pool.fixations.by_ts_window(export_window)
+        fixations_in_section = self.g_pool.fixations.by_ts_window(
+            export_window)
 
         with open(
             os.path.join(export_dir, "fixations.csv"), "w", encoding="utf-8", newline=""
@@ -777,9 +792,12 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
         ) as csvfile:
             csv_writer = csv.writer(csvfile)
             csv_writer.writerow(("fixation classifier", "Dispersion_Duration"))
-            csv_writer.writerow(("max_dispersion", f"{self.max_dispersion:0.3f} deg"))
-            csv_writer.writerow(("min_duration", f"{self.min_duration:.0f} ms"))
-            csv_writer.writerow(("max_duration", f"{self.max_duration:.0f} ms"))
+            csv_writer.writerow(
+                ("max_dispersion", f"{self.max_dispersion:0.3f} deg"))
+            csv_writer.writerow(
+                ("min_duration", f"{self.min_duration:.0f} ms"))
+            csv_writer.writerow(
+                ("max_duration", f"{self.max_duration:.0f} ms"))
             csv_writer.writerow("")
             csv_writer.writerow(("fixation_count", len(fixations_in_section)))
             logger.info("Created 'fixation_report.csv' file.")
@@ -890,7 +908,8 @@ class Fixation_Detector(Fixation_Detector_Base):
             draw_circle(
                 pt, radius=48.0, stroke_width=10.0, color=RGBA(1.0, 1.0, 0.0, 1.0)
             )
-            self.glfont.draw_text(pt[0] + 48.0, pt[1], str(self.recent_fixation["id"]))
+            self.glfont.draw_text(pt[0] + 48.0, pt[1],
+                                  str(self.recent_fixation["id"]))
 
     def init_ui(self):
         self.add_menu()
