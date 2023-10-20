@@ -408,7 +408,7 @@ class Offline_Fixation_Detector(Observable, Fixation_Detector_Base):
                 self,
                 min=0.01,
                 step=0.1,
-                max=5.0,
+                max=10.0,
                 label="Maximum Dispersion [degrees]",
                 setter=set_max_dispersion,
             )
@@ -925,7 +925,7 @@ class Fixation_Detector(Fixation_Detector_Base):
                 self,
                 min=0.01,
                 step=0.1,
-                max=5.0,
+                max=10.0,
                 label="Maximum Dispersion [degrees]",
             )
         )
