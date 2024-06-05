@@ -6,11 +6,11 @@ dataclasses ; python_version<"3.7"
 # Third-party
 av
 click
-glfw>=2.0.0
+glfw
 msgpack>=1.0.0
 numexpr
 numpy>=1.20.0
-opencv-python
+#opencv-python
 packaging>=20.0,<22
 psutil
 pyopengl
@@ -28,9 +28,9 @@ win_inet_pton ; platform_system == "Windows"
 sysv-ipc 
 
 # Pupil-Labs
-ndsi==1.4.*
+ndsi @ git+https://github.com/bjornborg/pyndsi.git@master
 pupil-apriltags==1.0.*
 pupil-detectors>=2.0.2rc2
-pupil-labs-uvc
+pupil-labs-uvc @ git+https://github.com/pupil-labs/pyuvc.git@master
 pye3d>=0.3.2
-pyglui>=1.31.1b1
+pyglui @ git+https://github.com/pupil-labs/pyglui@master
