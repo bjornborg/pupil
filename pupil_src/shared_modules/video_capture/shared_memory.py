@@ -405,11 +405,11 @@ class Shared_Memory_Manager(Base_Manager):
         self.sourceList = []
 
     def get_devices(self):
-        # self.updateSourceList()
-        # if len(self.sourceList) == 0:
-        return []
-        # else:
-        #     return [SourceInfo(label=f"{source} @ Local shared memory", manager=self, key=f"shm.{source}") for source in self.sourceList]
+        self.updateSourceList()
+        if len(self.sourceList) == 0:
+          return []
+        else:
+          return [SourceInfo(label=f"{source} @ Local shared memory", manager=self, key=f"shm.{source}") for source in self.sourceList]
 
     def get_cameras(self):
         self.updateSourceList()
@@ -446,8 +446,8 @@ class Shared_Memory_Manager(Base_Manager):
 
     def updateSourceList(self):
         self.sourceList = [
-            os.path.join(r"/tmp", file)
-            for file in os.listdir(r"/tmp")
+            os.path.join("/tmp", file)
+            for file in os.listdir("/tmp")
             if file.endswith(".rgb")
             or file.endswith(".i422")
         ]
